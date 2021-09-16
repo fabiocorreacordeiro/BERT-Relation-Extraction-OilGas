@@ -1,4 +1,4 @@
-# BERT(S) for Relation Extraction
+# BERT(S) for Relation Extraction in the Oil and Gas domain
 
 We forked the repository from plkmo/BERT-Relation-Extraction and we are adapting it for the specific domain of oil and gas corpora in the Portuguese language.
 
