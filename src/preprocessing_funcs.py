@@ -416,7 +416,7 @@ def load_dataloaders(args, max_length=50000):
         
         D = []
         logger.info("Loading Spacy NLP...")
-        nlp = spacy.load("en_core_web_lg")
+        nlp = spacy.load("pt_core_news_sm")
         
         for text_chunk in tqdm(text_chunks, total=num_chunks):
             D.extend(create_pretraining_corpus(text_chunk, nlp, window_size=40))
