@@ -51,10 +51,15 @@ if __name__ == "__main__":
         
     if (args.infer == 1) and (args.task != 'fewrel'):
         inferer = infer_from_trained(args, detect_entities=True)
-        test = "The surprise [E1]visit[/E1] caused a [E2]frenzy[/E2] on the already chaotic trading floor."
-        inferer.infer_sentence(test, detect_entities=False)
-        test2 = "After eating the chicken, he developed a sore throat the next morning."
-        inferer.infer_sentence(test2, detect_entities=True)
+        
+        test2 = "O [E1]campo de Marlim[/E1] é o maior campo da [E2]Bacia de Campos[/E2]."
+        inferer.infer_sentence(test2, detect_entities=False)
+        
+        test2 = "Os campos de [E1]Marlim[/E1] e [E2]Albacora[/E2] são os maiores produtores da região."
+        inferer.infer_sentence(test2, detect_entities=False)
+        
+        test2 = "O estado mais populoso do [E1]Brasil[/E2] é o estado de [E2]São Paulo[/E2], com uma população maior do que muitos países europeus."
+        inferer.infer_sentence(test2, detect_entities=False)
         
         while True:
             sent = input("Type input sentence ('quit' or 'exit' to terminate):\n")

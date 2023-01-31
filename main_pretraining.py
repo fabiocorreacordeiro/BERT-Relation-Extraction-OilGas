@@ -38,7 +38,8 @@ if __name__ == "__main__":
                                                                                                 'bert-large-uncased',\
                                                                                     For ALBERT: 'albert-base-v2',\
                                                                                                 'albert-large-v2',\
-                                                                                    For BioBERT: 'bert-base-uncased' (biobert_v1.1_pubmed)")
+                                                                                    For BioBERT: 'bert-base-uncased' (biobert_v1.1_pubmed), \
+                                                                                    For Bertimbau: neuralmind/bert-base-portuguese-cased")
     
     args = parser.parse_args()
     

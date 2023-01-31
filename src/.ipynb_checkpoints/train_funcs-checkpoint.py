@@ -56,7 +56,7 @@ class Two_Headed_Loss(nn.Module):
         blank_logits: (batch_size, embeddings)
         blank_labels: (batch_size, 0 or 1)
         '''
-        
+        print(blank_labels, lm_labels)
         pos_idxs = [i for i, l in enumerate(blank_labels.squeeze().tolist()) if l == 1]
         neg_idxs = [i for i, l in enumerate(blank_labels.squeeze().tolist()) if l == 0]
         

@@ -1,9 +1,6 @@
-# BERT(S) for Relation Extraction in the Oil and Gas domain
-
-We forked the repository from plkmo/BERT-Relation-Extraction and we are adapting it for the specific domain of oil and gas corpora in the Portuguese language.
+# BERT(S) for Relation Extraction
 
 ## Overview
-
 A PyTorch implementation of the models for the paper ["Matching the Blanks: Distributional Similarity for Relation Learning"](https://arxiv.org/pdf/1906.03158.pdf) published in ACL 2019.  
 Note: This is not an official repo for the paper.  
 Additional models for relation extraction, implemented here based on the paper's methodology:  

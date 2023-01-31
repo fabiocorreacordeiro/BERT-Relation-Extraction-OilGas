@@ -1,0 +1,35 @@
+Collecting package metadata (current_repodata.json): ...working... done
+Solving environment: ...working... done
+
+## Package Plan ##
+
+  environment location: /home/U4VN/miniconda3/envs/nlp
+
+  added / updated specs:
+    - nodejs
+
+
+The following packages will be downloaded:
+
+    package                    |            build
+    ---------------------------|-----------------
+    nodejs-10.13.0             |       he6710b0_0        13.0 MB  http://ticepnexus.ep.petrobras.com.br:8081/nexus/repository/conda-proxy/main
+    ------------------------------------------------------------
+                                           Total:        13.0 MB
+
+The following packages will be UPDATED:
+
+  ca-certificates    conda-forge::ca-certificates-2021.5.3~ --> nexus/repository/conda-proxy/main::ca-certificates-2021.7.5-h06a4308_1
+  nodejs                       conda-forge::nodejs-6.13.1-0 --> nexus/repository/conda-proxy/main::nodejs-10.13.0-he6710b0_0
+
+The following packages will be SUPERSEDED by a higher-priority channel:
+
+  certifi            conda-forge::certifi-2021.5.30-py39hf~ --> nexus/repository/conda-proxy/main::certifi-2021.5.30-py39h06a4308_0
+
+
+
+Downloading and Extracting Packages
+nodejs-10.13.0       | 13.0 MB   |            |   0% nodejs-10.13.0       | 13.0 MB   |            |   0% nodejs-10.13.0       | 13.0 MB   | 1          |   1% nodejs-10.13.0       | 13.0 MB   | 3          |   4% nodejs-10.13.0       | 13.0 MB   | 9          |   9% nodejs-10.13.0       | 13.0 MB   | #          |  11% nodejs-10.13.0       | 13.0 MB   | #7         |  18% nodejs-10.13.0       | 13.0 MB   | ##1        |  21% nodejs-10.13.0       | 13.0 MB   | ##3        |  24% nodejs-10.13.0       | 13.0 MB   | ##6        |  26% nodejs-10.13.0       | 13.0 MB   | ##9        |  29% nodejs-10.13.0       | 13.0 MB   | ###4       |  35% nodejs-10.13.0       | 13.0 MB   | ####4      |  44% nodejs-10.13.0       | 13.0 MB   | #####1     |  51% nodejs-10.13.0       | 13.0 MB   | #####5     |  55% nodejs-10.13.0       | 13.0 MB   | #####8     |  58% nodejs-10.13.0       | 13.0 MB   | ######6    |  66% nodejs-10.13.0       | 13.0 MB   | #######1   |  72% nodejs-10.13.0       | 13.0 MB   | #######6   |  77% nodejs-10.13.0       | 13.0 MB   | ########3  |  83% nodejs-10.13.0       | 13.0 MB   | ########5  |  86% nodejs-10.13.0       | 13.0 MB   | #########1 |  92% nodejs-10.13.0       | 13.0 MB   | #########3 |  94% nodejs-10.13.0       | 13.0 MB   | #########7 |  97% nodejs-10.13.0       | 13.0 MB   | #########9 |  99% nodejs-10.13.0       | 13.0 MB   | ########## | 100% 
+Preparing transaction: ...working... done
+Verifying transaction: ...working... done
+Executing transaction: ...working... done

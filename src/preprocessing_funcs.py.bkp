@@ -18,8 +18,6 @@ from .misc import save_as_pickle, load_pickle, get_subject_objects
 from tqdm import tqdm
 import random
 import logging
-import pickle
-from nltk.tokenize import sent_tokenize
 
 tqdm.pandas(desc="prog_bar")
 logging.basicConfig(format='%(asctime)s [%(levelname)s]: %(message)s', \
@@ -41,9 +39,8 @@ def process_sent(sent):
     return
 
 def process_textlines(text):
-    #text = [process_sent(sent) for sent in text] #
-    text = process_sent(text)
-    #text = " ".join([t for t in text if t is not None]) #
+    text = [process_sent(sent) for sent in text]
+    text = " ".join([t for t in text if t is not None])
     text = re.sub(' {2,}', ' ', text) # remove extra spaces > 1
     return text    
 
@@ -52,17 +49,16 @@ def create_pretraining_corpus(raw_text, nlp, window_size=40):
     Input: Chunk of raw text
     Output: modified corpus of triplets (relation statement, entity1, entity2)
     '''
-    #logger.info("Processing sentences...")
+    logger.info("Processing sentences...")
     sents_doc = nlp(raw_text)
-    
     ents = sents_doc.ents # get entities
     
-    #logger.info("Processing relation statements by entities...")
+    logger.info("Processing relation statements by entities...")
     entities_of_interest = ["PERSON", "NORP", "FAC", "ORG", "GPE", "LOC", "PRODUCT", "EVENT", \
                             "WORK_OF_ART", "LAW", "LANGUAGE"]
     length_doc = len(sents_doc)
     D = []; ents_list = []
-    for i in range(len(ents)):
+    for i in tqdm(range(len(ents))):
         e1 = ents[i]
         e1start = e1.start; e1end = e1.end
         if e1.label_ not in entities_of_interest:
@@ -125,50 +121,49 @@ def create_pretraining_corpus(raw_text, nlp, window_size=40):
                 D.append((r, e1.text, e2.text))
                 ents_list.append((e1.text, e2.text))
                 #print(e1.text,",", e2.text)
-    if False:
-        print("Processed dataset samples from named entity extraction:")
-        samples_D_idx = np.random.choice([idx for idx in range(len(D))],\
-                                          size=min(3, len(D)),\
+    print("Processed dataset samples from named entity extraction:")
+    samples_D_idx = np.random.choice([idx for idx in range(len(D))],\
+                                      size=min(3, len(D)),\
+                                      replace=False)
+    for idx in samples_D_idx:
+        print(D[idx], '\n')
+    ref_D = len(D)
+    
+    logger.info("Processing relation statements by dependency tree parsing...")
+    doc_sents = [s for s in sents_doc.sents]
+    for sent_ in tqdm(doc_sents, total=len(doc_sents)):
+        if len(sent_) > (window_size + 1):
+            continue
+        
+        left_r = sent_[0].i
+        pairs = get_subject_objects(sent_)
+        
+        if len(pairs) > 0:
+            for pair in pairs:
+                e1, e2 = pair[0], pair[1]
+                
+                if (len(e1) > 3) or (len(e2) > 3): # don't want entities that are too long
+                    continue
+                
+                e1text, e2text = " ".join(w.text for w in e1) if isinstance(e1, list) else e1.text,\
+                                    " ".join(w.text for w in e2) if isinstance(e2, list) else e2.text
+                e1start, e1end = e1[0].i if isinstance(e1, list) else e1.i, e1[-1].i + 1 if isinstance(e1, list) else e1.i + 1
+                e2start, e2end = e2[0].i if isinstance(e2, list) else e2.i, e2[-1].i + 1 if isinstance(e2, list) else e2.i + 1
+                if (e1end < e2start) and ((e1text, e2text) not in ents_list):
+                    assert e1start != e1end
+                    assert e2start != e2end
+                    assert (e2start - e1end) > 0
+                    r = ([w.text for w in sent_], (e1start - left_r, e1end - left_r), (e2start - left_r, e2end - left_r))
+                    D.append((r, e1text, e2text))
+                    ents_list.append((e1text, e2text))
+    
+    print("Processed dataset samples from dependency tree parsing:")
+    if (len(D) - ref_D) > 0:
+        samples_D_idx = np.random.choice([idx for idx in range(ref_D, len(D))],\
+                                          size=min(3,(len(D) - ref_D)),\
                                           replace=False)
         for idx in samples_D_idx:
             print(D[idx], '\n')
-        ref_D = len(D)
-
-        logger.info("Processing relation statements by dependency tree parsing...")
-        doc_sents = [s for s in sents_doc.sents]
-        for sent_ in tqdm(doc_sents, total=len(doc_sents)):
-            if len(sent_) > (window_size + 1):
-                continue
-
-            left_r = sent_[0].i
-            pairs = get_subject_objects(sent_)
-
-            if len(pairs) > 0:
-                for pair in pairs:
-                    e1, e2 = pair[0], pair[1]
-
-                    if (len(e1) > 3) or (len(e2) > 3): # don't want entities that are too long
-                        continue
-
-                    e1text, e2text = " ".join(w.text for w in e1) if isinstance(e1, list) else e1.text,\
-                                        " ".join(w.text for w in e2) if isinstance(e2, list) else e2.text
-                    e1start, e1end = e1[0].i if isinstance(e1, list) else e1.i, e1[-1].i + 1 if isinstance(e1, list) else e1.i + 1
-                    e2start, e2end = e2[0].i if isinstance(e2, list) else e2.i, e2[-1].i + 1 if isinstance(e2, list) else e2.i + 1
-                    if (e1end < e2start) and ((e1text, e2text) not in ents_list):
-                        assert e1start != e1end
-                        assert e2start != e2end
-                        assert (e2start - e1end) > 0
-                        r = ([w.text for w in sent_], (e1start - left_r, e1end - left_r), (e2start - left_r, e2end - left_r))
-                        D.append((r, e1text, e2text))
-                        ents_list.append((e1text, e2text))
-
-        print("Processed dataset samples from dependency tree parsing:")
-        if (len(D) - ref_D) > 0:
-            samples_D_idx = np.random.choice([idx for idx in range(ref_D, len(D))],\
-                                              size=min(3,(len(D) - ref_D)),\
-                                              replace=False)
-            for idx in samples_D_idx:
-                print(D[idx], '\n')
     return D
 
 class pretrain_dataset(Dataset):
@@ -179,16 +174,6 @@ class pretrain_dataset(Dataset):
         self.mask_probability = 0.15
         
         self.df = pd.DataFrame(D, columns=['r','e1','e2'])
-        
-        #self.df['e1e2'] = self.df['e1'] + self.df['e2']
-        #self.df.set_index(['e1e2'],inplace=True)
-        #self.df.reset_index(['e1e2'], inplace=True)
-
-        #with open('./data/dict_pos_examples.pkl','rb') as f:
-        #    self.dict_pos_examples = pickle.load(f)        
-        #with open('./data/dict_neg_examples.pkl','rb') as f:
-        #    self.dict_neg_examples = pickle.load(f)        
-            
         self.e1s = list(self.df['e1'].unique())
         self.e2s = list(self.df['e2'].unique())
         
@@ -256,7 +241,6 @@ class pretrain_dataset(Dataset):
         return D
         
     def tokenize(self, D):
-        #print(D)
         (x, s1, s2), e1, e2 = D
         #x = [w.lower() for w in x if x != '[BLANK]'] # we are using uncased model
         
@@ -319,21 +303,11 @@ class pretrain_dataset(Dataset):
         else:
             ### get positive samples
             r, e1, e2 = self.df.iloc[idx] # positive sample
-            #pos_idxs = []
-            #pool = self.dict_pos_examples[(e1,e2)]
             pool = self.df[((self.df['e1'] == e1) & (self.df['e2'] == e2))].index
             pool = pool.append(self.df[((self.df['e1'] == e2) & (self.df['e2'] == e1))].index)
-
             pos_idxs = np.random.choice(pool, \
                                         size=min(int(self.batch_size//2), len(pool)), replace=False)
-
-
             ### get negative samples
-            #neg_idxs = []
-            #pool = self.dict_neg_examples[(e1,e2)]
-            #Q = 1/(len(pool)+1)
-            #neg_idxs = np.random.choice(pool, \
-            #                            size=min(int(self.batch_size//2), len(pool)), replace=False)
             '''
             choose from option: 
             1) sampling uniformly from all negatives
@@ -368,7 +342,6 @@ class pretrain_dataset(Dataset):
                                             size=min(int(self.batch_size//2), len(pool)), replace=False)
                 Q = 1/len(pool)
             
-            
             batch = []
             ## process positive sample
             pos_df = self.df.loc[pos_idxs]
@@ -393,7 +366,6 @@ class pretrain_dataset(Dataset):
                 #e1, e2 = torch.tensor(e1), torch.tensor(e2)
                 batch.append((x, masked_for_pred, e1_e2_start, torch.FloatTensor([Q]), torch.LongTensor([0])))
             batch = self.PS(batch)
-            
             return batch
     
 class Pad_Sequence():
@@ -439,33 +411,29 @@ def load_dataloaders(args, max_length=50000):
         logger.info("Loading pre-training data...")
         with open(args.pretrain_data, "r", encoding="utf8") as f:
             text = f.readlines()
-            D = []
-            logger.info("Loading Spacy NLP...")
-            #nlp = spacy.load("en_core_web_lg")
-            nlp = spacy.load("pt_core_news_lg")
-            N = 100000 #len(text)
-            #N = len(text)
-            for line in tqdm(text[:N], total=N):
-                #text = text[:1500] # restrict size for testing
-                line = process_textlines(line)
-                for sent in re.split(r'[.?!]', line):
-                    D.extend(create_pretraining_corpus(sent, nlp))
-                #logger.info("Length of text (characters): %d" % len(line))
-                #num_chunks = math.ceil(len(text)/max_length)
-                #logger.info("Splitting into %d max length chunks of size %d" % (num_chunks, max_length))
-                #text_chunks = (text[i*max_length:(i*max_length + max_length)] for i in range(num_chunks))
-
-
-                #for text_chunk in tqdm(text_chunks, total=num_chunks):
-                #    for text_sent in sent_tokenize(text_chunk):
-                #        D.extend(create_pretraining_corpus(text_sent, nlp))
+        
+        #text = text[:1500] # restrict size for testing
+        text = process_textlines(text)
+        
+        logger.info("Length of text (characters): %d" % len(text))
+        num_chunks = math.ceil(len(text)/max_length)
+        logger.info("Splitting into %d max length chunks of size %d" % (num_chunks, max_length))
+        text_chunks = (text[i*max_length:(i*max_length + max_length)] for i in range(num_chunks))
+        
+        D = []
+        logger.info("Loading Spacy NLP...")
+        #nlp = spacy.load("en_core_web_lg")
+        nlp = spacy.load("pt_core_news_lg")
+        
+        for text_chunk in tqdm(text_chunks, total=num_chunks):
+            D.extend(create_pretraining_corpus(text_chunk, nlp, window_size=40))
             
         logger.info("Total number of relation statements in pre-training corpus: %d" % len(D))
         save_as_pickle("D.pkl", D)
         logger.info("Saved pre-training corpus to %s" % "./data/D.pkl")
     else:
         D = load_pickle("D.pkl")
-        #D = random.sample(D, 200000)
+        D = random.sample(D, 200000)
         logger.info("Loaded pre-training data from saved file. Size = %d " % len(D))
         
     train_set = pretrain_dataset(args, D, batch_size=args.batch_size)
